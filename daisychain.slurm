@@ -6,9 +6,9 @@
 #SBATCH -n 16                  # Total number of tasks
 #SBATCH -p normal              # Queue name
 #SBATCH -o output.%j           # Name of stdout output file (%j expands to jobid)
-#SBATCH -t 00:01:00            # Run time (hh:mm:ss)
+#SBATCH -t 48:00:00            # Run time (hh:mm:ss)
 # <--- (Use the next line ONLY if you have MULTIPLE accounts) --->
-#SBATCH -A TG-STA110019S 
+#SBATCH -A 
 #------------------------------------------------------
 
 # To daisy chain jobs, the script must know the name of the job submission script.
@@ -18,7 +18,7 @@
 # their own unique job name.
 
 #----------------------User Options------------------------
-myJobScript=$(ls $SLURM_SUBMIT_DIR/*.slurm | tail -n 1 )
+myJobScript=$(ls -t $SLURM_SUBMIT_DIR/*.slurm | tail -n 1 )
 loginNode="login1"
 #----------------------------------------------------------
 
@@ -54,11 +54,6 @@ echo "Slurm Job number $SLURM_JOB_ID entitled ${SLURM_JOB_NAME} started on $(dat
 # submit dependent job
 nextJobNumber=$(( thisJobNumber + 1 ))
 nextSlurmJobName=${baseSlurmJobName}$nextJobNumber
-
-#I'm not sure if this next line will work.  I need a way to get the job script name.
-# note: $0 resolves to a script in /tmp/ that doesn't help
-#echo "\$SLURM_SUBMIT_DIR is $SLURM_SUBMIT_DIR"
-#ls $SLURM_SUBMIT_DIR
 
 echo "Submitting Dependent Job:"
 ssh $loginNode "cd $PWD; env sbatch -J $nextSlurmJobName --dependency=afterany:$SLURM_JOB_ID ${myJobScript}"
